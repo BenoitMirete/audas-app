@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 
@@ -17,7 +18,7 @@ function slugify(name: string): string {
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll() {
+  async findAll() {
     return this.prisma.project.findMany({
       include: { _count: { select: { runs: true, members: true } } },
       orderBy: { createdAt: 'desc' },
@@ -38,16 +39,26 @@ export class ProjectsService {
     return project;
   }
 
-  create(dto: CreateProjectDto) {
+  async create(dto: CreateProjectDto) {
     const slug = slugify(dto.name);
-    return this.prisma.project.create({
-      data: { name: dto.name, slug, description: dto.description, slackWebhook: dto.slackWebhook },
-    });
+    try {
+      return await this.prisma.project.create({
+        data: { name: dto.name, slug, description: dto.description, slackWebhook: dto.slackWebhook },
+      });
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
+        throw new ConflictException(`Project with slug "${slug}" already exists`);
+      }
+      throw e;
+    }
   }
 
   async update(id: string, dto: UpdateProjectDto) {
     await this.findOne(id);
-    return this.prisma.project.update({ where: { id }, data: dto });
+    return this.prisma.project.update({
+      where: { id },
+      data: { name: dto.name, description: dto.description, slackWebhook: dto.slackWebhook },
+    });
   }
 
   async remove(id: string) {
@@ -89,6 +100,6 @@ export class ProjectsService {
 
   async deleteApiKey(projectId: string, keyId: string) {
     await this.findOne(projectId);
-    await this.prisma.apiKey.delete({ where: { id: keyId } });
+    await this.prisma.apiKey.delete({ where: { id: keyId, projectId } });
   }
 }

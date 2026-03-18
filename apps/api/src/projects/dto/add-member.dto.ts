@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsUUID } from 'class-validator';
 import { Role } from '@prisma/client';
 
 export class AddMemberDto {
   @ApiProperty()
-  @IsString()
+  @IsUUID()
   userId!: string;
 
   @ApiProperty({ enum: Role })
