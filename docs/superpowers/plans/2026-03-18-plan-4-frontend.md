@@ -55,6 +55,7 @@ apps/web/
 ## Task 1: Vite scaffold
 
 **Files:**
+
 - Create: `apps/web/package.json`, `vite.config.ts`, `tsconfig.json`, `.env.example`, `vitest.setup.ts`, `src/main.tsx`
 
 - [ ] **Step 1: Scaffold**
@@ -84,7 +85,10 @@ import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 
 export default defineConfig({
   plugins: [
-    TanStackRouterVite({ routesDirectory: './src/routes', generatedRouteTree: './src/routeTree.gen.ts' }),
+    TanStackRouterVite({
+      routesDirectory: './src/routes',
+      generatedRouteTree: './src/routeTree.gen.ts',
+    }),
     react(),
   ],
   resolve: { alias: { '@': '/src' } },
@@ -104,8 +108,11 @@ export default defineConfig({
 {
   "name": "@audas/web",
   "scripts": {
-    "dev": "vite", "build": "tsc && vite build",
-    "lint": "eslint src", "test": "vitest run", "test:watch": "vitest"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "test:watch": "vitest"
   }
 }
 ```
@@ -119,6 +126,7 @@ export default defineConfig({
 ## Task 2: shadcn/ui setup
 
 **Files:**
+
 - Create: `apps/web/components.json`, `src/lib/utils.ts`, `src/components/ui/*`
 
 - [ ] **Step 1: Init**
@@ -146,6 +154,7 @@ Expected: `src/components/ui/` populated.
 ## Task 3: API client + auth store
 
 **Files:**
+
 - Create: `src/lib/auth.ts`, `src/lib/api.ts`, `src/__tests__/api.test.ts`
 
 - [ ] **Step 1: Write failing test**
@@ -158,9 +167,18 @@ import { setToken, getToken, clearToken } from '../lib/auth';
 
 describe('auth token storage', () => {
   beforeEach(() => localStorage.clear());
-  it('stores and retrieves token', () => { setToken('abc'); expect(getToken()).toBe('abc'); });
-  it('returns null when no token', () => { expect(getToken()).toBeNull(); });
-  it('clears token', () => { setToken('abc'); clearToken(); expect(getToken()).toBeNull(); });
+  it('stores and retrieves token', () => {
+    setToken('abc');
+    expect(getToken()).toBe('abc');
+  });
+  it('returns null when no token', () => {
+    expect(getToken()).toBeNull();
+  });
+  it('clears token', () => {
+    setToken('abc');
+    clearToken();
+    expect(getToken()).toBeNull();
+  });
 });
 ```
 
@@ -182,39 +200,89 @@ import axios from 'axios';
 import { getToken, clearToken } from './auth';
 import type { RunStatus, TestStatus } from '@audas/shared';
 
-export const apiClient = axios.create({ baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000' });
+export const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
+});
 
 apiClient.interceptors.request.use((cfg) => {
-  const t = getToken(); if (t) cfg.headers.Authorization = `Bearer ${t}`; return cfg;
+  const t = getToken();
+  if (t) cfg.headers.Authorization = `Bearer ${t}`;
+  return cfg;
 });
-apiClient.interceptors.response.use((r) => r, (err) => {
-  if (err.response?.status === 401) { clearToken(); window.location.replace('/login'); }
-  return Promise.reject(err);
-});
+apiClient.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (err.response?.status === 401) {
+      clearToken();
+      window.location.replace('/login');
+    }
+    return Promise.reject(err);
+  },
+);
 
 // Response shapes
-export interface Project { id: string; name: string; slug: string; slackWebhook?: string; }
+export interface Project {
+  id: string;
+  name: string;
+  slug: string;
+  slackWebhook?: string;
+}
 export interface Run {
-  id: string; projectId: string; status: RunStatus; startedAt: string; finishedAt?: string;
-  duration?: number; branch?: string; commitSha?: string; commitMessage?: string;
-  pipelineId?: string; pipelineUrl?: string; mrId?: string; mrUrl?: string; triggeredBy?: string;
+  id: string;
+  projectId: string;
+  status: RunStatus;
+  startedAt: string;
+  finishedAt?: string;
+  duration?: number;
+  branch?: string;
+  commitSha?: string;
+  commitMessage?: string;
+  pipelineId?: string;
+  pipelineUrl?: string;
+  mrId?: string;
+  mrUrl?: string;
+  triggeredBy?: string;
 }
 export interface TestResult {
-  id: string; runId: string; title: string; status: TestStatus; duration: number;
-  errorMessage?: string; stackTrace?: string; tags: string[];
-  screenshots: string[]; videos: string[]; traces: string[];
+  id: string;
+  runId: string;
+  title: string;
+  status: TestStatus;
+  duration: number;
+  errorMessage?: string;
+  stackTrace?: string;
+  tags: string[];
+  screenshots: string[];
+  videos: string[];
+  traces: string[];
 }
-export interface FlakyTest { title: string; rate: number; occurrences: TestStatus[]; }
-export interface ProjectMember { id: string; email: string; role: 'admin' | 'viewer'; }
-export interface User { id: string; email: string; role: 'admin' | 'viewer'; }
+export interface FlakyTest {
+  title: string;
+  rate: number;
+  occurrences: TestStatus[];
+}
+export interface ProjectMember {
+  id: string;
+  email: string;
+  role: 'admin' | 'viewer';
+}
+export interface User {
+  id: string;
+  email: string;
+  role: 'admin' | 'viewer';
+}
 export interface DashboardStats {
-  totalRuns: number; passRate: number;
+  totalRuns: number;
+  passRate: number;
   projects: Array<{ project: Project; latestRun: Run | null }>;
   recentFlakyTests: FlakyTest[];
 }
 
 export const api = {
-  auth: { login: (email: string, password: string) => apiClient.post<{ token: string }>('/auth/login', { email, password }) },
+  auth: {
+    login: (email: string, password: string) =>
+      apiClient.post<{ token: string }>('/auth/login', { email, password }),
+  },
   dashboard: { get: () => apiClient.get<DashboardStats>('/dashboard') },
   projects: {
     list: () => apiClient.get<Project[]>('/projects'),
@@ -227,14 +295,18 @@ export const api = {
     get: (pid: string, rid: string) => apiClient.get<Run>(`/projects/${pid}/runs/${rid}`),
   },
   testResults: {
-    list: (pid: string, rid: string) => apiClient.get<TestResult[]>(`/projects/${pid}/runs/${rid}/tests`),
-    get: (pid: string, rid: string, tid: string) => apiClient.get<TestResult>(`/projects/${pid}/runs/${rid}/tests/${tid}`),
-    history: (pid: string, tid: string) => apiClient.get<TestResult[]>(`/projects/${pid}/tests/${tid}/history`),
+    list: (pid: string, rid: string) =>
+      apiClient.get<TestResult[]>(`/projects/${pid}/runs/${rid}/tests`),
+    get: (pid: string, rid: string, tid: string) =>
+      apiClient.get<TestResult>(`/projects/${pid}/runs/${rid}/tests/${tid}`),
+    history: (pid: string, tid: string) =>
+      apiClient.get<TestResult[]>(`/projects/${pid}/tests/${tid}/history`),
   },
   flaky: { list: (pid: string) => apiClient.get<FlakyTest[]>(`/projects/${pid}/flaky`) },
   members: {
     list: (pid: string) => apiClient.get<ProjectMember[]>(`/projects/${pid}/members`),
-    add: (pid: string, email: string, role: string) => apiClient.post(`/projects/${pid}/members`, { email, role }),
+    add: (pid: string, email: string, role: string) =>
+      apiClient.post(`/projects/${pid}/members`, { email, role }),
     remove: (pid: string, mid: string) => apiClient.delete(`/projects/${pid}/members/${mid}`),
   },
   users: {
@@ -254,6 +326,7 @@ export const api = {
 ## Task 4: TanStack Router + Query setup
 
 **Files:**
+
 - Create: `src/main.tsx`, `src/routes/__root.tsx`, stub files for all routes
 
 - [ ] **Step 1: `src/main.tsx`**
@@ -265,9 +338,15 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { routeTree } from './routeTree.gen';
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } });
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
+});
 const router = createRouter({ routeTree, context: { queryClient } });
-declare module '@tanstack/react-router' { interface Register { router: typeof router } }
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -292,11 +371,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   component: () => (
     <div className="flex h-screen">
       <nav className="w-56 shrink-0 border-r p-4 flex flex-col gap-2">
-        <Link to="/" className="font-bold text-lg mb-2">Audas</Link>
-        <Link to="/" className="[&.active]:font-semibold">Dashboard</Link>
-        <Link to="/settings/users" className="[&.active]:font-semibold">Users</Link>
+        <Link to="/" className="font-bold text-lg mb-2">
+          Audas
+        </Link>
+        <Link to="/" className="[&.active]:font-semibold">
+          Dashboard
+        </Link>
+        <Link to="/settings/users" className="[&.active]:font-semibold">
+          Users
+        </Link>
       </nav>
-      <main className="flex-1 overflow-auto p-6"><Outlet /></main>
+      <main className="flex-1 overflow-auto p-6">
+        <Outlet />
+      </main>
     </div>
   ),
 });
@@ -335,6 +422,7 @@ export function renderWithQuery(ui: React.ReactElement) {
 ## Task 5: Login page (full TDD example)
 
 **Files:**
+
 - Create: `src/__tests__/login.test.tsx`
 - Modify: `src/routes/login.tsx`
 
@@ -348,7 +436,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('../lib/api', () => ({ api: { auth: { login: vi.fn() } } }));
-vi.mock('../lib/auth', () => ({ setToken: vi.fn(), getToken: vi.fn(() => null), clearToken: vi.fn() }));
+vi.mock('../lib/auth', () => ({
+  setToken: vi.fn(),
+  getToken: vi.fn(() => null),
+  clearToken: vi.fn(),
+}));
 
 import { api } from '../lib/api';
 import { setToken } from '../lib/auth';
@@ -390,7 +482,9 @@ describe('LoginForm', () => {
     await userEvent.type(screen.getByLabelText(/email/i), 'bad@example.com');
     await userEvent.type(screen.getByLabelText(/password/i), 'wrong');
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/invalid credentials/i));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(/invalid credentials/i),
+    );
   });
 
   it('disables button while loading', async () => {
@@ -430,28 +524,53 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault(); setLoading(true); setError(null);
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
     try {
       const { data } = await api.auth.login(email, password);
       setToken(data.token);
       navigate({ to: '/' });
     } catch (err: unknown) {
-      setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Login failed');
-    } finally { setLoading(false); }
+      setError(
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+          'Login failed',
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm">
       <div className="grid gap-1.5">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
       </div>
-      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</Button>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      <Button type="submit" disabled={loading}>
+        {loading ? 'Signing in…' : 'Sign in'}
+      </Button>
     </form>
   );
 }
@@ -460,8 +579,12 @@ function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <Card className="w-full max-w-sm">
-        <CardHeader><CardTitle>Sign in to Audas</CardTitle></CardHeader>
-        <CardContent><LoginForm /></CardContent>
+        <CardHeader>
+          <CardTitle>Sign in to Audas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <LoginForm />
+        </CardContent>
       </Card>
     </div>
   );
@@ -477,6 +600,7 @@ function LoginPage() {
 ## Task 6: Dashboard page
 
 **Files:**
+
 - Create: `src/__tests__/dashboard.test.tsx`
 - Modify: `src/routes/index.tsx`
 - Create: `src/components/StatusBadge.tsx`
@@ -485,9 +609,13 @@ function LoginPage() {
 
 ```tsx
 import { Badge } from '@/components/ui/badge';
-const variantMap: Record<string, 'default'|'secondary'|'destructive'|'outline'> = {
-  passed: 'default', failed: 'destructive', running: 'secondary', pending: 'outline',
-  skipped: 'outline', flaky: 'secondary',
+const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  passed: 'default',
+  failed: 'destructive',
+  running: 'secondary',
+  pending: 'outline',
+  skipped: 'outline',
+  flaky: 'secondary',
 };
 export function StatusBadge({ status }: { status: string }) {
   return <Badge variant={variantMap[status] ?? 'outline'}>{status}</Badge>;
@@ -507,6 +635,7 @@ export function StatusBadge({ status }: { status: string }) {
 ## Task 7: Project page (filter pattern — show in full)
 
 **Files:**
+
 - Create: `src/__tests__/project.test.tsx`
 - Modify: `src/routes/projects/$projectId/index.tsx`
 
@@ -527,8 +656,20 @@ import { api } from '../lib/api';
 import { ProjectRunsTable } from '../routes/projects/$projectId/index';
 
 const mockRuns = [
-  { id: 'r1', projectId: 'p1', status: 'passed', startedAt: '2026-03-18T09:00:00Z', branch: 'main' },
-  { id: 'r2', projectId: 'p1', status: 'failed', startedAt: '2026-03-18T08:00:00Z', branch: 'feat/x' },
+  {
+    id: 'r1',
+    projectId: 'p1',
+    status: 'passed',
+    startedAt: '2026-03-18T09:00:00Z',
+    branch: 'main',
+  },
+  {
+    id: 'r2',
+    projectId: 'p1',
+    status: 'failed',
+    startedAt: '2026-03-18T08:00:00Z',
+    branch: 'feat/x',
+  },
 ];
 
 describe('ProjectRunsTable', () => {
@@ -541,7 +682,9 @@ describe('ProjectRunsTable', () => {
 
   it('shows status badges', async () => {
     renderWithQuery(<ProjectRunsTable projectId="p1" />);
-    await waitFor(() => { expect(screen.getByText('passed')).toBeInTheDocument(); });
+    await waitFor(() => {
+      expect(screen.getByText('passed')).toBeInTheDocument();
+    });
   });
 
   it('calls api.runs.list with branch filter when selected', async () => {
@@ -550,7 +693,8 @@ describe('ProjectRunsTable', () => {
     await userEvent.click(screen.getByRole('combobox', { name: /branch/i }));
     await userEvent.click(screen.getByText('main'));
     await waitFor(() =>
-      expect(api.runs.list).toHaveBeenCalledWith('p1', expect.objectContaining({ branch: 'main' })));
+      expect(api.runs.list).toHaveBeenCalledWith('p1', expect.objectContaining({ branch: 'main' })),
+    );
   });
 
   it('calls api.runs.list with status filter when selected', async () => {
@@ -559,7 +703,11 @@ describe('ProjectRunsTable', () => {
     await userEvent.click(screen.getByRole('combobox', { name: /status/i }));
     await userEvent.click(screen.getByText('failed'));
     await waitFor(() =>
-      expect(api.runs.list).toHaveBeenCalledWith('p1', expect.objectContaining({ status: 'failed' })));
+      expect(api.runs.list).toHaveBeenCalledWith(
+        'p1',
+        expect.objectContaining({ status: 'failed' }),
+      ),
+    );
   });
 });
 ```
@@ -572,8 +720,21 @@ Run: `pnpm test` — expected: fail.
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components/StatusBadge';
 import { api } from '@/lib/api';
@@ -587,10 +748,13 @@ export function ProjectRunsTable({ projectId }: { projectId: string }) {
 
   const { data: runs = [], isLoading } = useQuery({
     queryKey: ['runs', projectId, { branch, status }],
-    queryFn: () => api.runs.list(projectId, {
-      ...(branch && { branch }),
-      ...(status && { status: status as RunStatus }),
-    }).then((r) => r.data),
+    queryFn: () =>
+      api.runs
+        .list(projectId, {
+          ...(branch && { branch }),
+          ...(status && { status: status as RunStatus }),
+        })
+        .then((r) => r.data),
   });
 
   const branches = [...new Set(runs.map((r) => r.branch).filter(Boolean))];
@@ -606,7 +770,11 @@ export function ProjectRunsTable({ projectId }: { projectId: string }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">All branches</SelectItem>
-              {branches.map((b) => <SelectItem key={b} value={b!}>{b}</SelectItem>)}
+              {branches.map((b) => (
+                <SelectItem key={b} value={b!}>
+                  {b}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -618,32 +786,48 @@ export function ProjectRunsTable({ projectId }: { projectId: string }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">All statuses</SelectItem>
-              {['passed','failed','running','pending'].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {['passed', 'failed', 'running', 'pending'].map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {isLoading ? <p>Loading…</p> : (
+      {isLoading ? (
+        <p>Loading…</p>
+      ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Run ID</TableHead><TableHead>Status</TableHead>
-              <TableHead>Branch</TableHead><TableHead>Started</TableHead><TableHead>Duration</TableHead>
+              <TableHead>Run ID</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Branch</TableHead>
+              <TableHead>Started</TableHead>
+              <TableHead>Duration</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {runs.map((run) => (
               <TableRow key={run.id}>
                 <TableCell>
-                  <Link to="/projects/$projectId/runs/$runId" params={{ projectId, runId: run.id }}
-                    className="font-mono text-sm underline">
+                  <Link
+                    to="/projects/$projectId/runs/$runId"
+                    params={{ projectId, runId: run.id }}
+                    className="font-mono text-sm underline"
+                  >
                     {run.id.slice(0, 8)}
                   </Link>
                 </TableCell>
-                <TableCell><StatusBadge status={run.status} /></TableCell>
+                <TableCell>
+                  <StatusBadge status={run.status} />
+                </TableCell>
                 <TableCell className="font-mono text-sm">{run.branch ?? '—'}</TableCell>
-                <TableCell className="text-sm">{new Date(run.startedAt).toLocaleString()}</TableCell>
+                <TableCell className="text-sm">
+                  {new Date(run.startedAt).toLocaleString()}
+                </TableCell>
                 <TableCell className="text-sm">
                   {run.duration ? `${(run.duration / 1000).toFixed(1)}s` : '—'}
                 </TableCell>
@@ -663,8 +847,12 @@ function ProjectPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Project Runs</h1>
         <nav className="flex gap-3 text-sm">
-          <Link to="/projects/$projectId/flaky" params={{ projectId }} className="underline">Flaky Tests</Link>
-          <Link to="/projects/$projectId/settings" params={{ projectId }} className="underline">Settings</Link>
+          <Link to="/projects/$projectId/flaky" params={{ projectId }} className="underline">
+            Flaky Tests
+          </Link>
+          <Link to="/projects/$projectId/settings" params={{ projectId }} className="underline">
+            Settings
+          </Link>
         </nav>
       </div>
       <ProjectRunsTable projectId={projectId} />
@@ -682,6 +870,7 @@ function ProjectPage() {
 ## Task 8: Run detail page
 
 **Files:**
+
 - Create: `src/__tests__/run.test.tsx`
 - Modify: `src/routes/projects/$projectId/runs/$runId/index.tsx`
 
@@ -703,6 +892,7 @@ Export `RunDetail` component (takes `projectId`, `runId` props) for testability;
 ## Task 9: Test detail page
 
 **Files:**
+
 - Create: `src/components/OccurrenceDots.tsx`
 - Create: `src/components/ArtifactViewer.tsx`
 - Create: `src/__tests__/test-detail.test.tsx`
@@ -712,14 +902,20 @@ Export `RunDetail` component (takes `projectId`, `runId` props) for testability;
 
 ```tsx
 const colorMap: Record<string, string> = {
-  passed: 'bg-green-500', failed: 'bg-red-500', flaky: 'bg-orange-400', skipped: 'bg-slate-400',
+  passed: 'bg-green-500',
+  failed: 'bg-red-500',
+  flaky: 'bg-orange-400',
+  skipped: 'bg-slate-400',
 };
 export function OccurrenceDots({ occurrences }: { occurrences: Array<{ status: string }> }) {
   return (
     <div className="flex gap-1.5" aria-label="occurrence history">
       {occurrences.slice(-10).map((o, i) => (
-        <span key={i} title={o.status}
-          className={`w-3 h-3 rounded-full ${colorMap[o.status] ?? 'bg-slate-300'}`} />
+        <span
+          key={i}
+          title={o.status}
+          className={`w-3 h-3 rounded-full ${colorMap[o.status] ?? 'bg-slate-300'}`}
+        />
       ))}
     </div>
   );
@@ -749,6 +945,7 @@ Export `TestDetail` component for testability.
 ## Task 10: Flaky tests page
 
 **Files:**
+
 - Create: `src/__tests__/flaky.test.tsx`
 - Modify: `src/routes/projects/$projectId/flaky.tsx`
 
@@ -773,6 +970,7 @@ export function FlakyTestsTable({ projectId }: { projectId: string }) {
 ## Task 11: Settings pages
 
 **Files:**
+
 - Create: `src/__tests__/settings.test.tsx`
 - Modify: `src/routes/projects/$projectId/settings.tsx`
 - Modify: `src/routes/settings/users.tsx`
@@ -795,7 +993,10 @@ Write test: mock `api.users.list`, assert emails render, role `<Select>` changes
 // src/routes/settings/users.tsx
 export function UsersTable() {
   const qc = useQueryClient();
-  const { data: users = [] } = useQuery({ queryKey: ['users'], queryFn: () => api.users.list().then(r => r.data) });
+  const { data: users = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => api.users.list().then((r) => r.data),
+  });
   // Table: Email | Role (Select: viewer/admin, onChange calls api.users.update + invalidate) | Delete button
 }
 ```

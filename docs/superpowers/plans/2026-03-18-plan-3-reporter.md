@@ -46,6 +46,7 @@ packages/reporter/
 ## Task 1: Package scaffold
 
 **Files:**
+
 - Create: `packages/reporter/package.json`
 - Create: `packages/reporter/tsconfig.json`
 - Create: `packages/reporter/tsconfig.build.json`
@@ -70,9 +71,7 @@ packages/reporter/
       "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint src",
@@ -108,9 +107,7 @@ packages/reporter/
     "types": ["node", "vitest/globals"]
   },
   "include": ["src"],
-  "references": [
-    { "path": "../../packages/shared" }
-  ]
+  "references": [{ "path": "../../packages/shared" }]
 }
 ```
 
@@ -182,6 +179,7 @@ git commit -m "chore(reporter): scaffold @audas/reporter package"
 The status mapper translates Playwright's `TestResult.status` string into our `TestStatus` enum. `timedOut` and `interrupted` both map to `failed`.
 
 **Files:**
+
 - Create: `packages/reporter/src/status-mapper.ts`
 - Create: `packages/reporter/src/__tests__/status-mapper.test.ts`
 
@@ -269,6 +267,7 @@ git commit -m "feat(reporter): add Playwright → TestStatus status mapper"
 Playwright 1.42+ supports native tags via `test.tag()` or `@tagname` syntax in the test title. Tags are available on `TestCase.tags` as a `string[]` where each entry is prefixed with `@` (e.g. `'@smoke'`). The extractor strips the `@` prefix.
 
 **Files:**
+
 - Create: `packages/reporter/src/tag-extractor.ts`
 - Create: `packages/reporter/src/__tests__/tag-extractor.test.ts`
 
@@ -351,6 +350,7 @@ git commit -m "feat(reporter): add Playwright tag extractor"
 Reads GitLab CI environment variables and returns a `CIMetadata` object. If no CI variables are present (i.e. local development), returns `undefined`.
 
 **Files:**
+
 - Create: `packages/reporter/src/ci-metadata.ts`
 - Create: `packages/reporter/src/__tests__/ci-metadata.test.ts`
 
@@ -516,6 +516,7 @@ git commit -m "feat(reporter): add GitLab CI metadata extractor"
 The API client is a typed wrapper around axios that handles the three API calls the reporter needs to make: `createRun`, `createTestResult`, and `finalizeRun`. It also handles artifact uploads as multipart form data. All methods return `Promise<T>` and let errors propagate — the reporter class is responsible for catching them.
 
 **Files:**
+
 - Create: `packages/reporter/src/api-client.ts`
 - Create: `packages/reporter/src/__tests__/api-client.test.ts`
 
@@ -672,7 +673,9 @@ describe('AudasApiClient', () => {
       const [url, formData, config] = postSpy.mock.calls[0];
       expect(url).toBe('/test-results/result-1/artifacts');
       expect(formData).toBeInstanceOf(FormData);
-      expect(config.headers).toMatchObject({ 'Content-Type': expect.stringContaining('multipart/form-data') });
+      expect(config.headers).toMatchObject({
+        'Content-Type': expect.stringContaining('multipart/form-data'),
+      });
     });
 
     it('propagates axios errors', async () => {
@@ -803,6 +806,7 @@ The reporter class implements Playwright's `Reporter` interface and wires togeth
 5. Wrap every API call in try/catch — log to stderr but never throw.
 
 **Files:**
+
 - Create: `packages/reporter/src/reporter.ts`
 - Modify: `packages/reporter/src/index.ts`
 - Create: `packages/reporter/src/__tests__/reporter.test.ts`
@@ -813,7 +817,13 @@ Create `packages/reporter/src/__tests__/reporter.test.ts`:
 
 ```ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { FullConfig, Suite, TestCase, TestResult, FullResult } from '@playwright/test/reporter';
+import type {
+  FullConfig,
+  Suite,
+  TestCase,
+  TestResult,
+  FullResult,
+} from '@playwright/test/reporter';
 import { AudasReporter } from '../reporter.js';
 
 // Mock the API client module so we control all HTTP calls
@@ -889,7 +899,9 @@ describe('AudasReporter', () => {
       finalizeRun: vi.fn().mockResolvedValue(undefined),
       uploadArtifact: vi.fn().mockResolvedValue(undefined),
     };
-    vi.mocked(AudasApiClient).mockImplementation(() => apiClientInstance as unknown as AudasApiClient);
+    vi.mocked(AudasApiClient).mockImplementation(
+      () => apiClientInstance as unknown as AudasApiClient,
+    );
   });
 
   describe('enabled option', () => {
@@ -1121,9 +1133,7 @@ describe('AudasReporter', () => {
       const reporter = new AudasReporter(OPTIONS);
       await reporter.onBegin(makeConfig(), makeSuite());
 
-      await expect(
-        reporter.onTestEnd(makeTestCase(), makeTestResult()),
-      ).resolves.toBeUndefined();
+      await expect(reporter.onTestEnd(makeTestCase(), makeTestResult())).resolves.toBeUndefined();
 
       expect(stderrSpy).toHaveBeenCalled();
       stderrSpy.mockRestore();
@@ -1238,11 +1248,7 @@ export interface AudasReporterOptions {
 }
 
 /** Content types we support uploading as artifacts. */
-const SUPPORTED_ARTIFACT_TYPES = new Set([
-  'image/png',
-  'video/webm',
-  'application/zip',
-]);
+const SUPPORTED_ARTIFACT_TYPES = new Set(['image/png', 'video/webm', 'application/zip']);
 
 /** Map a supported content type to a canonical file extension. */
 const EXTENSION_MAP: Record<string, string> = {
@@ -1394,6 +1400,7 @@ git commit -m "feat(reporter): implement AudasReporter class"
 Verify the package compiles cleanly, can be packed for npm, and integrates into the Turborepo pipeline.
 
 **Files:**
+
 - Modify: `turbo.json` (add reporter to test/build pipeline if not already handled by the wildcard)
 
 - [ ] **Step 1: Build the reporter package**
@@ -1403,6 +1410,7 @@ cd packages/reporter && pnpm build
 ```
 
 Expected: `dist/` created with:
+
 - `dist/index.js`
 - `dist/index.d.ts`
 - `dist/reporter.js` + `.d.ts`
@@ -1434,6 +1442,7 @@ cd packages/reporter && pnpm pack --dry-run
 ```
 
 Expected output includes:
+
 ```
 dist/index.js
 dist/index.d.ts
@@ -1500,6 +1509,7 @@ git commit -m "chore(reporter): verify build and pack output"
 Add a Changeset entry to mark `@audas/reporter` at `0.1.0` and verify the release workflow.
 
 **Files:**
+
 - Create: `.changeset/<auto-named>.md` (generated by CLI)
 
 - [ ] **Step 1: Create an initial changeset for the reporter**
@@ -1509,6 +1519,7 @@ cd /Users/ben/Developer/Audas && pnpm exec changeset add
 ```
 
 When prompted:
+
 - Select `@audas/reporter` (use spacebar to select, enter to confirm)
 - Choose bump type: `minor` (0.1.0 → first feature release)
 - Enter summary: `Initial release of @audas/reporter — custom Playwright reporter for the Audas dashboard`
@@ -1542,6 +1553,7 @@ grep -A5 "^release:" .gitlab-ci.yml
 ```
 
 Expected output:
+
 ```yaml
 release:
   stage: release
@@ -1591,12 +1603,15 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   reporter: [
-    ['@audas/reporter', {
-      apiUrl: process.env.AUDAS_API_URL ?? 'https://audas.example.com',
-      apiKey: process.env.AUDAS_API_KEY ?? '',
-      projectId: 'my-project',
-      enabled: process.env.AUDAS_ENABLED !== 'false',
-    }],
+    [
+      '@audas/reporter',
+      {
+        apiUrl: process.env.AUDAS_API_URL ?? 'https://audas.example.com',
+        apiKey: process.env.AUDAS_API_KEY ?? '',
+        projectId: 'my-project',
+        enabled: process.env.AUDAS_ENABLED !== 'false',
+      },
+    ],
   ],
 });
 ```

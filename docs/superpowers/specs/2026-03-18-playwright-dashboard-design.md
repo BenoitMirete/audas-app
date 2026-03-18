@@ -33,6 +33,7 @@ audas/
 **Package scope:** `@audas/*`
 
 **Tooling:**
+
 - `pnpm` — workspaces, fast installs
 - `Turborepo` — task orchestration with caching
 - `Changesets` — versioning and npm release of `@audas/reporter`
@@ -46,15 +47,15 @@ NestJS application with PostgreSQL via Prisma.
 
 ### Modules
 
-| Module | Responsibility |
-|---|---|
-| `AuthModule` | JWT + refresh tokens for user sessions; static API key validation for reporter-to-API communication; role-based access (admin / viewer) |
-| `UsersModule` | User CRUD, role assignment |
-| `ProjectsModule` | Project CRUD (one project = one Playwright repo/scope) |
-| `RunsModule` | Receive and store test runs from reporters |
-| `TestResultsModule` | Individual test results, artifact access |
-| `TagsModule` | Tag listing, stats per tag |
-| `NotificationsModule` | Slack webhook notifications on run failure |
+| Module                | Responsibility                                                                                                                          |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `AuthModule`          | JWT + refresh tokens for user sessions; static API key validation for reporter-to-API communication; role-based access (admin / viewer) |
+| `UsersModule`         | User CRUD, role assignment                                                                                                              |
+| `ProjectsModule`      | Project CRUD (one project = one Playwright repo/scope)                                                                                  |
+| `RunsModule`          | Receive and store test runs from reporters                                                                                              |
+| `TestResultsModule`   | Individual test results, artifact access                                                                                                |
+| `TagsModule`          | Tag listing, stats per tag                                                                                                              |
+| `NotificationsModule` | Slack webhook notifications on run failure                                                                                              |
 
 ### Data Model
 
@@ -70,6 +71,7 @@ User
 ```
 
 **Run** — one full execution (e.g. one GitLab CI job or one local run):
+
 - `id`, `projectId`, `status` (pending | running | passed | failed)
 - `startedAt`, `finishedAt`, `duration`
 - CI metadata (nullable — absent for local runs):
@@ -82,6 +84,7 @@ User
   - `triggeredBy` (`GITLAB_USER_NAME`)
 
 **TestResult** — one individual Playwright test:
+
 - `id`, `runId`, `title`, `status` (passed | failed | skipped | flaky)
 - `duration`, `errorMessage`, `stackTrace`
 - `tags: Tag[]` (many-to-many)
@@ -99,15 +102,15 @@ React + Vite SPA.
 
 ### Pages
 
-| Page | Content |
-|---|---|
-| `Dashboard` | Global overview — latest runs per project, success rates, recent flaky tests |
-| `Project` | Run history, filterable by branch / tag / status |
-| `Run` | Run detail — test list, duration, branch/commit metadata |
-| `Test` | Test detail — status, logs, screenshots, traces, video, occurrence history |
-| `Flaky Tests` | Detected flaky tests, trend over last N runs |
-| `Settings > Project` | Project config, members, Slack webhook |
-| `Settings > Users` | User account management (admin only) |
+| Page                 | Content                                                                      |
+| -------------------- | ---------------------------------------------------------------------------- |
+| `Dashboard`          | Global overview — latest runs per project, success rates, recent flaky tests |
+| `Project`            | Run history, filterable by branch / tag / status                             |
+| `Run`                | Run detail — test list, duration, branch/commit metadata                     |
+| `Test`               | Test detail — status, logs, screenshots, traces, video, occurrence history   |
+| `Flaky Tests`        | Detected flaky tests, trend over last N runs                                 |
+| `Settings > Project` | Project config, members, Slack webhook                                       |
+| `Settings > Users`   | User account management (admin only)                                         |
 
 ### Stack
 
@@ -129,14 +132,17 @@ Published as `@audas/reporter` on npm. Implements the Playwright `Reporter` inte
 // playwright.config.ts
 export default defineConfig({
   reporter: [
-    ['@audas/reporter', {
-      apiUrl: 'https://audas.example.com',
-      apiKey: 'xxx',
-      projectId: 'my-project',
-      enabled: process.env.AUDAS_ENABLED !== 'false', // opt-out locally
-    }]
-  ]
-})
+    [
+      '@audas/reporter',
+      {
+        apiUrl: 'https://audas.example.com',
+        apiKey: 'xxx',
+        projectId: 'my-project',
+        enabled: process.env.AUDAS_ENABLED !== 'false', // opt-out locally
+      },
+    ],
+  ],
+});
 ```
 
 ### Lifecycle
@@ -161,12 +167,12 @@ export default defineConfig({
 Pure TypeScript types and enums — no logic, no external dependencies. Consumed by both `api` and `reporter`.
 
 ```ts
-CreateRunDto          // reporter → API: create a run
-CreateTestResultDto   // reporter → API: create a test result
-RunStatus             // enum: pending | running | passed | failed
-TestStatus            // enum: passed | failed | skipped | flaky
-CIMetadata            // branch, commitSha, pipelineId, mrId, triggeredBy, etc.
-TagDto                // tag name
+CreateRunDto; // reporter → API: create a run
+CreateTestResultDto; // reporter → API: create a test result
+RunStatus; // enum: pending | running | passed | failed
+TestStatus; // enum: passed | failed | skipped | flaky
+CIMetadata; // branch, commitSha, pipelineId, mrId, triggeredBy, etc.
+TagDto; // tag name
 ```
 
 ---
@@ -178,9 +184,9 @@ Single pipeline at monorepo root. Turborepo handles caching between jobs.
 ```yaml
 stages: [lint, build, test, release]
 
-lint:    turbo run lint
-build:   turbo run build
-test:    turbo run test
+lint: turbo run lint
+build: turbo run build
+test: turbo run test
 
 # npm release on git tag (Changesets)
 release: changeset publish
