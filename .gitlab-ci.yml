@@ -1,0 +1,52 @@
+image: node:20-alpine
+
+stages:
+  - lint
+  - build
+  - test
+  - release
+
+variables:
+  PNPM_VERSION: "9"
+
+before_script:
+  - corepack enable
+  - corepack prepare pnpm@${PNPM_VERSION} --activate
+  - pnpm install --frozen-lockfile
+
+cache:
+  key:
+    files:
+      - pnpm-lock.yaml
+  paths:
+    - node_modules/
+    - .turbo/
+
+lint:
+  stage: lint
+  script:
+    - pnpm lint
+    - pnpm format:check
+
+build:
+  stage: build
+  script:
+    - pnpm build
+  artifacts:
+    paths:
+      - packages/*/dist/
+      - apps/*/dist/
+    expire_in: 1 hour
+
+test:
+  stage: test
+  script:
+    - pnpm test
+
+release:
+  stage: release
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+  script:
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+    - pnpm exec changeset publish
