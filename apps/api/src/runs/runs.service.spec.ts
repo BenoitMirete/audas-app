@@ -57,7 +57,7 @@ describe('RunsService', () => {
 
     it('filters by status', async () => {
       mockPrisma.run.findMany.mockResolvedValue([]);
-      await service.findAll('p1', { status: 'FAILED' });
+      await service.findAll('p1', { status: RunStatus.FAILED });
       expect(mockPrisma.run.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ status: 'FAILED' }),

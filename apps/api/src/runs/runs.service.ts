@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto, RunStatus as SharedRunStatus, CIMetadata } from '@audas/shared';
 import { RunStatus as PrismaRunStatus } from '@prisma/client';
+import { RunFilterDto } from './dto/run-filter.dto';
 
 const STATUS_MAP: Record<SharedRunStatus, PrismaRunStatus> = {
   [SharedRunStatus.PENDING]: PrismaRunStatus.PENDING,
@@ -12,13 +13,7 @@ const STATUS_MAP: Record<SharedRunStatus, PrismaRunStatus> = {
 
 const TERMINAL_STATUSES: SharedRunStatus[] = [SharedRunStatus.PASSED, SharedRunStatus.FAILED];
 
-export interface RunFilterDto {
-  status?: string;
-  branch?: string;
-  tag?: string;
-  limit?: number;
-  offset?: number;
-}
+export { RunFilterDto };
 
 @Injectable()
 export class RunsService {
@@ -46,7 +41,7 @@ export class RunsService {
     const { status, branch, tag, limit = 20, offset = 0 } = filters;
 
     const where: Record<string, unknown> = { projectId };
-    if (status) where.status = status;
+    if (status) where.status = STATUS_MAP[status];
     if (branch) where.branch = branch;
     if (tag) {
       where.testResults = {

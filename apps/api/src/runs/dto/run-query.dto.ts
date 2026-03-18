@@ -1,13 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-import { RunFilterDto } from '../runs.service';
+import { RunStatus } from '@audas/shared';
+import { RunFilterDto } from './run-filter.dto';
 
 export class RunQueryDto implements RunFilterDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ enum: RunStatus })
   @IsOptional()
-  @IsString()
-  status?: string;
+  @IsEnum(RunStatus)
+  status?: RunStatus;
 
   @ApiPropertyOptional()
   @IsOptional()
