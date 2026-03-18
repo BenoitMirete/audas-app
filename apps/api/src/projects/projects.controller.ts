@@ -65,6 +65,7 @@ export class ProjectsController {
 
   @Delete(':id/members/:userId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remove a project member' })
   removeMember(
     @Param('id', ParseUUIDPipe) projectId: string,
     @Param('userId', ParseUUIDPipe) userId: string,
