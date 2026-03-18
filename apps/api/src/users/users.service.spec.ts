@@ -65,7 +65,7 @@ describe('UsersService', () => {
   describe('remove', () => {
     it('deletes a user', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({ id: '1' });
-      mockPrisma.user.delete.mockResolvedValue({ id: '1' });
+      mockPrisma.user.delete.mockResolvedValue(undefined);
       await expect(service.remove('1')).resolves.toBeUndefined();
     });
   });

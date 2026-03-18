@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 const USER_SELECT = {
@@ -15,7 +16,7 @@ const USER_SELECT = {
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll() {
+  async findAll() {
     return this.prisma.user.findMany({ select: USER_SELECT });
   }
 
@@ -25,11 +26,11 @@ export class UsersService {
     return user;
   }
 
-  async updateRole(id: string, role: string) {
+  async updateRole(id: string, role: Role) {
     await this.findOne(id); // throws NotFoundException if missing
     return this.prisma.user.update({
       where: { id },
-      data: { role: role as any },
+      data: { role },
       select: USER_SELECT,
     });
   }

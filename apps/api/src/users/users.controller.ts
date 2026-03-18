@@ -8,16 +8,12 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { IsIn } from 'class-validator';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
-export class UpdateRoleDto {
-  @IsIn(['ADMIN', 'VIEWER'])
-  role!: string;
-}
+import { UpdateRoleDto } from './dto/update-role.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -34,20 +30,20 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id/role')
   @ApiOperation({ summary: 'Update user role (admin only)' })
-  updateRole(@Param('id') id: string, @Body() dto: UpdateRoleDto) {
+  updateRole(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateRoleDto) {
     return this.usersService.updateRole(id, dto.role);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete user (admin only)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
 }
