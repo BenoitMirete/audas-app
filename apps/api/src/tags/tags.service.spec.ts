@@ -1,13 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { TestStatus as PrismaTestStatus } from '@prisma/client';
 import { TagsService } from './tags.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const mockPrisma = {
   tag: {
-    findMany: jest.fn(),
-  },
-  testResultTag: {
-    groupBy: jest.fn(),
     findMany: jest.fn(),
   },
   testResult: {
@@ -48,6 +45,10 @@ describe('TagsService', () => {
       const result = await service.getTagStats('p1');
       expect(result[0]).toHaveProperty('passRate');
       expect(result[0].passRate).toBe(0.8);
+      expect(mockPrisma.testResult.count).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ where: expect.objectContaining({ status: PrismaTestStatus.PASSED }) }),
+      );
     });
   });
 });
