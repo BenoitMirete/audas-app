@@ -4,5 +4,10 @@ dist/
 .turbo/
 *.tsbuildinfo
 .env
+.env.*
 .env.local
 coverage/
+apps/api/uploads/
+apps/api/uploads-test/
+apps/api/prisma/test.db
+apps/api/prisma/test.db-journal
