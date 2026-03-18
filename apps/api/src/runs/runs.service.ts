@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto, RunStatus as SharedRunStatus, CIMetadata } from '@audas/shared';
 import { RunStatus as PrismaRunStatus } from '@prisma/client';
@@ -40,7 +42,7 @@ export class RunsService {
   async findAll(projectId: string, filters: RunFilterDto) {
     const { status, branch, tag, limit = 20, offset = 0 } = filters;
 
-    const where: Record<string, unknown> = { projectId };
+    const where: Prisma.RunWhereInput = { projectId };
     if (status) where.status = STATUS_MAP[status];
     if (branch) where.branch = branch;
     if (tag) {
@@ -75,16 +77,21 @@ export class RunsService {
     return run;
   }
 
-  async updateStatus(id: string, status: SharedRunStatus, duration?: number) {
-    await this.findOne(id);
+  async updateStatus(id: string, status: SharedRunStatus, duration?: number, apiKeyProjectId?: string) {
     const isTerminal = TERMINAL_STATUSES.includes(status);
-
-    return this.prisma.run.update({
-      where: { id },
-      data: {
-        status: STATUS_MAP[status],
-        ...(isTerminal && { finishedAt: new Date(), duration }),
-      },
-    });
+    try {
+      return await this.prisma.run.update({
+        where: { id, ...(apiKeyProjectId && { projectId: apiKeyProjectId }) },
+        data: {
+          status: STATUS_MAP[status],
+          ...(isTerminal && { finishedAt: new Date(), duration }),
+        },
+      });
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025') {
+        throw new NotFoundException(`Run ${id} not found`);
+      }
+      throw e;
+    }
   }
 }

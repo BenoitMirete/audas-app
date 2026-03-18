@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
   ParseUUIDPipe,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { RunsService } from './runs.service';
@@ -26,8 +27,8 @@ export class RunsController {
   @UseGuards(ApiKeyGuard)
   @Post()
   @ApiOperation({ summary: 'Create a new run (reporter, uses API key)' })
-  create(@Body() dto: CreateRunRequestDto) {
-    return this.runsService.create(dto);
+  create(@Body() dto: CreateRunRequestDto, @Req() req: any) {
+    return this.runsService.create({ ...dto, projectId: req.apiKeyProjectId });
   }
 
   // Reporter updates run status using API key
@@ -37,8 +38,9 @@ export class RunsController {
   updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateRunStatusDto,
+    @Req() req: any,
   ) {
-    return this.runsService.updateStatus(id, dto.status, dto.duration);
+    return this.runsService.updateStatus(id, dto.status, dto.duration, req.apiKeyProjectId);
   }
 
   // Dashboard reads use JWT

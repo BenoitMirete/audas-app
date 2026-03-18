@@ -85,7 +85,6 @@ describe('RunsService', () => {
 
   describe('updateStatus', () => {
     it('updates run status and sets finishedAt when terminal', async () => {
-      mockPrisma.run.findUnique.mockResolvedValue({ id: 'r1', status: 'RUNNING' });
       mockPrisma.run.update.mockResolvedValue({
         id: 'r1',
         status: 'PASSED',
@@ -101,6 +100,23 @@ describe('RunsService', () => {
             finishedAt: expect.any(Date),
             duration: 5000,
           }),
+        }),
+      );
+    });
+
+    it('throws NotFoundException when run not found', async () => {
+      const { PrismaClientKnownRequestError } = await import('@prisma/client/runtime/library');
+      const err = new PrismaClientKnownRequestError('not found', { code: 'P2025', clientVersion: '5.0.0' });
+      mockPrisma.run.update.mockRejectedValue(err);
+      await expect(service.updateStatus('r1', RunStatus.PASSED)).rejects.toThrow(NotFoundException);
+    });
+
+    it('does not set finishedAt for non-terminal status', async () => {
+      mockPrisma.run.update.mockResolvedValue({ id: 'r1', status: 'RUNNING' });
+      await service.updateStatus('r1', RunStatus.RUNNING);
+      expect(mockPrisma.run.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({ finishedAt: expect.anything() }),
         }),
       );
     });

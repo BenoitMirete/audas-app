@@ -38,13 +38,13 @@ describe('RunsController', () => {
 
   it('POST /runs creates a run', async () => {
     mockService.create.mockResolvedValue({ id: 'r1', status: 'PENDING' });
-    const result = await controller.create({ projectId: 'p1' });
+    const result = await controller.create({ projectId: 'p1' }, { apiKeyProjectId: 'proj-1' });
     expect(result.status).toBe('PENDING');
   });
 
   it('PATCH /runs/:id/status updates status', async () => {
     mockService.updateStatus.mockResolvedValue({ id: 'r1', status: 'PASSED' });
-    const result = await controller.updateStatus('r1', { status: RunStatus.PASSED });
+    const result = await controller.updateStatus('r1', { status: RunStatus.PASSED }, { apiKeyProjectId: 'proj-1' });
     expect(result.status).toBe('PASSED');
   });
 
