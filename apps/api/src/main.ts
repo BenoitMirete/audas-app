@@ -2,8 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { mkdirSync } from 'fs';
 
 async function bootstrap() {
+  const uploadsDir = process.env.UPLOADS_DIR ?? './uploads';
+  mkdirSync(uploadsDir, { recursive: true });
+
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(
