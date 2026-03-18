@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto, RunStatus as SharedRunStatus, CIMetadata } from '@audas/shared';
-import { RunStatus as PrismaRunStatus } from '@prisma/client';
+import { RunStatus as PrismaRunStatus, TestStatus as PrismaTestStatus } from '@prisma/client';
 import { RunFilterDto } from './dto/run-filter.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -97,7 +97,7 @@ export class RunsService {
 
       if (isTerminal) {
         const failedCount = await this.prisma.testResult.count({
-          where: { runId: id, status: PrismaRunStatus.FAILED },
+          where: { runId: id, status: PrismaTestStatus.FAILED },
         });
         const totalCount = updated._count.testResults;
         // fire-and-forget — errors are swallowed inside NotificationsService
