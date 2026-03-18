@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String              @id @default(uuid())
+  email        String              @unique
+  passwordHash String
+  name         String
+  role         Role                @default(VIEWER)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  memberships  ProjectMembership[]
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+model Project {
+  id           String              @id @default(uuid())
+  name         String
+  slug         String              @unique
+  description  String?
+  slackWebhook String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  members      ProjectMembership[]
+  runs         Run[]
+  tags         Tag[]
+  apiKeys      ApiKey[]
+}
+
+model ProjectMembership {
+  id        String   @id @default(uuid())
+  userId    String
+  projectId String
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  projectId String
+  keyHash   String   @unique
+  label     String?
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Run {
+  id             String       @id @default(uuid())
+  projectId      String
+  status         RunStatus    @default(PENDING)
+  startedAt      DateTime     @default(now())
+  finishedAt     DateTime?
+  duration       Int?
+  branch         String?
+  commitSha      String?
+  commitMessage  String?
+  pipelineId     String?
+  pipelineUrl    String?
+  mrId           String?
+  mrUrl          String?
+  triggeredBy    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testResults    TestResult[]
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+}
+
+model TestResult {
+  id           String           @id @default(uuid())
+  runId        String
+  title        String
+  status       TestStatus
+  duration     Int
+  errorMessage String?
+  stackTrace   String?
+  screenshots  String[]
+  videos       String[]
+  traces       String[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  run          Run              @relation(fields: [runId], references: [id], onDelete: Cascade)
+  tags         TestResultTag[]
+}
+
+enum TestStatus {
+  PASSED
+  FAILED
+  SKIPPED
+  FLAKY
+}
+
+model Tag {
+  id          String          @id @default(uuid())
+  name        String
+  projectId   String
+  createdAt   DateTime        @default(now())
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testResults TestResultTag[]
+
+  @@unique([name, projectId])
+}
+
+model TestResultTag {
+  testResultId String
+  tagId        String
+  testResult   TestResult @relation(fields: [testResultId], references: [id], onDelete: Cascade)
+  tag          Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([testResultId, tagId])
+}
