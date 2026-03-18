@@ -99,6 +99,7 @@ describe('TestResultsService', () => {
         screenshots: [],
         videos: [],
         traces: [],
+        run: { projectId: 'p1' },
       });
       mockPrisma.testResult.update.mockResolvedValue({
         id: 'tr1',

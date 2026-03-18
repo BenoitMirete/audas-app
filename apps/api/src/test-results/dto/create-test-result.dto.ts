@@ -6,7 +6,6 @@ import { CreateTestResultDto } from '@audas/shared';
 
 export class CreateTestResultRequestDto implements CreateTestResultDto {
   @ApiProperty() @IsString() runId!: string;
-  @ApiProperty() @IsString() projectId!: string;
   @ApiProperty() @IsString() title!: string;
   @ApiProperty({ enum: TestStatus }) @IsEnum(TestStatus) status!: TestStatus;
   @ApiProperty() @IsNumber() @Type(() => Number) duration!: number;

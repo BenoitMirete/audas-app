@@ -92,19 +92,20 @@ export class TestResultsService {
     testResultId: string,
     type: 'screenshot' | 'video' | 'trace',
     filePath: string,
+    apiKeyProjectId?: string,
   ) {
     const existing = await this.prisma.testResult.findUnique({
       where: { id: testResultId },
-      select: { screenshots: true, videos: true, traces: true },
+      select: { screenshots: true, videos: true, traces: true, run: { select: { projectId: true } } },
     });
     if (!existing) throw new NotFoundException(`TestResult ${testResultId} not found`);
 
-    const fieldMap = {
-      screenshot: 'screenshots',
-      video: 'videos',
-      trace: 'traces',
-    } as const;
+    // Enforce project ownership
+    if (apiKeyProjectId && existing.run.projectId !== apiKeyProjectId) {
+      throw new NotFoundException(`TestResult ${testResultId} not found`);
+    }
 
+    const fieldMap = { screenshot: 'screenshots', video: 'videos', trace: 'traces' } as const;
     const field = fieldMap[type];
     const current: string[] = existing[field] ?? [];
 

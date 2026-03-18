@@ -55,6 +55,7 @@ export class TestResultsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('type') type: string,
     @UploadedFile() file: Express.Multer.File,
+    @Req() req: any,
   ) {
     if (!['screenshot', 'video', 'trace'].includes(type)) {
       throw new BadRequestException('type must be screenshot, video, or trace');
@@ -65,6 +66,7 @@ export class TestResultsController {
       id,
       type as 'screenshot' | 'video' | 'trace',
       file.path,
+      req.apiKeyProjectId,
     );
   }
 
@@ -78,14 +80,6 @@ export class TestResultsController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Get(':id')
-  @ApiOperation({ summary: 'Get test result detail' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.testResultsService.findOne(id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @Get('flaky/:projectId')
   @ApiOperation({ summary: 'Check if a test is flaky (by title)' })
   checkFlaky(
@@ -93,5 +87,13 @@ export class TestResultsController {
     @Query('title') title: string,
   ) {
     return this.testResultsService.detectFlakiness(projectId, title);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get(':id')
+  @ApiOperation({ summary: 'Get test result detail' })
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.testResultsService.findOne(id);
   }
 }
