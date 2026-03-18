@@ -3,18 +3,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-
-export interface CreateProjectDto {
-  name: string;
-  description?: string;
-  slackWebhook?: string;
-}
-
-export interface UpdateProjectDto {
-  name?: string;
-  description?: string;
-  slackWebhook?: string;
-}
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 function slugify(name: string): string {
   return name
@@ -41,7 +31,7 @@ export class ProjectsService {
         members: {
           include: { user: { select: { id: true, email: true, name: true, role: true } } },
         },
-        _count: { select: { runs: true } },
+        _count: { select: { runs: true, members: true } },
       },
     });
     if (!project) throw new NotFoundException(`Project ${id} not found`);

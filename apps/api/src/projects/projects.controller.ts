@@ -27,27 +27,32 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Get()
+  @ApiOperation({ summary: 'List all projects' })
   findAll() {
     return this.projectsService.findAll();
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a project by ID' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.projectsService.findOne(id);
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a new project' })
   create(@Body() dto: CreateProjectDto) {
     return this.projectsService.create(dto);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a project' })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProjectDto) {
     return this.projectsService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a project' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.projectsService.remove(id);
   }
@@ -74,12 +79,14 @@ export class ProjectsController {
   }
 
   @Get(':id/api-keys')
+  @ApiOperation({ summary: 'List API keys for a project' })
   listApiKeys(@Param('id', ParseUUIDPipe) projectId: string) {
     return this.projectsService.listApiKeys(projectId);
   }
 
   @Delete(':id/api-keys/:keyId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete an API key' })
   deleteApiKey(
     @Param('id', ParseUUIDPipe) projectId: string,
     @Param('keyId', ParseUUIDPipe) keyId: string,
