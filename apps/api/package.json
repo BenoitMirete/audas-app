@@ -65,7 +65,7 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@audas/shared$": "<rootDir>/../../packages/shared/src/index.ts"
+      "^@audas/shared$": "<rootDir>/../../../packages/shared/src/index.ts"
     }
   }
 }
