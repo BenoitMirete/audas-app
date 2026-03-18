@@ -48,7 +48,7 @@ NestJS application with PostgreSQL via Prisma.
 
 | Module | Responsibility |
 |---|---|
-| `AuthModule` | JWT + refresh tokens, role-based access (admin / viewer) |
+| `AuthModule` | JWT + refresh tokens for user sessions; static API key validation for reporter-to-API communication; role-based access (admin / viewer) |
 | `UsersModule` | User CRUD, role assignment |
 | `ProjectsModule` | Project CRUD (one project = one Playwright repo/scope) |
 | `RunsModule` | Receive and store test runs from reporters |
@@ -87,9 +87,9 @@ User
 - `tags: Tag[]` (many-to-many)
 - Artifact references (filesystem paths): screenshots, videos, traces
 
-**Artifact storage:** uploaded files stored on filesystem (local path or S3-compatible). Not stored in the database — only paths/references.
+**Artifact storage:** uploaded files stored on the local filesystem. Not stored in the database — only paths/references. (S3-compatible storage is out of scope for v1.)
 
-**Flaky test detection:** computed on-demand by comparing the last N runs of the same test (no complex real-time logic).
+**Flaky test detection:** computed on-demand by comparing the last 10 runs of the same test (no complex real-time logic).
 
 ---
 
