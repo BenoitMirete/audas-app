@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateRunDto, RunStatus as SharedRunStatus, CIMetadata } from '@audas/shared';
 import { RunStatus as PrismaRunStatus } from '@prisma/client';
 import { RunFilterDto } from './dto/run-filter.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const STATUS_MAP: Record<SharedRunStatus, PrismaRunStatus> = {
   [SharedRunStatus.PENDING]: PrismaRunStatus.PENDING,
@@ -19,7 +20,10 @@ export { RunFilterDto };
 
 @Injectable()
 export class RunsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async create(dto: CreateRunDto & { ci?: CIMetadata }) {
     const { projectId, ci } = dto;
@@ -80,13 +84,33 @@ export class RunsService {
   async updateStatus(id: string, status: SharedRunStatus, duration?: number, apiKeyProjectId?: string) {
     const isTerminal = TERMINAL_STATUSES.includes(status);
     try {
-      return await this.prisma.run.update({
+      const updated = await this.prisma.run.update({
         where: { id, ...(apiKeyProjectId && { projectId: apiKeyProjectId }) },
         data: {
           status: STATUS_MAP[status],
           ...(isTerminal && { finishedAt: new Date(), duration }),
         },
+        include: {
+          _count: { select: { testResults: true } },
+        },
       });
+
+      if (isTerminal) {
+        const failedCount = await this.prisma.testResult.count({
+          where: { runId: id, status: PrismaRunStatus.FAILED },
+        });
+        const totalCount = updated._count.testResults;
+        // fire-and-forget — errors are swallowed inside NotificationsService
+        void this.notifications.notifyRunComplete(
+          updated.projectId,
+          id,
+          status.toUpperCase(),
+          failedCount,
+          totalCount,
+        );
+      }
+
+      return updated;
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025') {
         throw new NotFoundException(`Run ${id} not found`);

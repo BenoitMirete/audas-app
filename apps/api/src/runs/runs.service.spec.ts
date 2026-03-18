@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RunsService } from './runs.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { NotFoundException } from '@nestjs/common';
 import { RunStatus } from '@audas/shared';
 
@@ -11,14 +12,23 @@ const mockPrisma = {
     findUnique: jest.fn(),
     update: jest.fn(),
   },
+  testResult: {
+    count: jest.fn(),
+  },
 };
+
+const mockNotifications = { notifyRunComplete: jest.fn() };
 
 describe('RunsService', () => {
   let service: RunsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [RunsService, { provide: PrismaService, useValue: mockPrisma }],
+      providers: [
+        RunsService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: NotificationsService, useValue: mockNotifications },
+      ],
     }).compile();
 
     service = module.get<RunsService>(RunsService);
@@ -87,9 +97,12 @@ describe('RunsService', () => {
     it('updates run status and sets finishedAt when terminal', async () => {
       mockPrisma.run.update.mockResolvedValue({
         id: 'r1',
+        projectId: 'p1',
         status: 'PASSED',
         finishedAt: new Date(),
+        _count: { testResults: 10 },
       });
+      mockPrisma.testResult.count.mockResolvedValue(0);
 
       const result = await service.updateStatus('r1', RunStatus.PASSED, 5000);
       expect(result.status).toBe('PASSED');
@@ -112,13 +125,29 @@ describe('RunsService', () => {
     });
 
     it('does not set finishedAt for non-terminal status', async () => {
-      mockPrisma.run.update.mockResolvedValue({ id: 'r1', status: 'RUNNING' });
+      mockPrisma.run.update.mockResolvedValue({ id: 'r1', projectId: 'p1', status: 'RUNNING', _count: { testResults: 0 } });
       await service.updateStatus('r1', RunStatus.RUNNING);
       expect(mockPrisma.run.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.not.objectContaining({ finishedAt: expect.anything() }),
         }),
       );
+    });
+
+    it('fires notification on FAILED terminal status', async () => {
+      mockPrisma.run.update.mockResolvedValue({
+        id: 'r1',
+        projectId: 'p1',
+        status: 'FAILED',
+        finishedAt: new Date(),
+        _count: { testResults: 10 },
+      });
+      mockPrisma.testResult.count.mockResolvedValue(3);
+
+      await service.updateStatus('r1', RunStatus.FAILED, 5000);
+      // Allow microtasks to flush the void promise
+      await Promise.resolve();
+      expect(mockNotifications.notifyRunComplete).toHaveBeenCalledWith('p1', 'r1', 'FAILED', 3, 10);
     });
   });
 });
