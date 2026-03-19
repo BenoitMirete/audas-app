@@ -308,6 +308,27 @@ describe('AudasReporter', () => {
       expect(apiClientInstance.uploadArtifact).not.toHaveBeenCalled();
     });
 
+    it('does not throw when uploadArtifact rejects — logs to stderr and resolves', async () => {
+      apiClientInstance.uploadArtifact.mockRejectedValueOnce(new Error('upload failed'));
+      const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+      const reporter = new AudasReporter(OPTIONS);
+      await reporter.onBegin(makeConfig(), makeSuite());
+
+      await expect(
+        reporter.onTestEnd(
+          makeTestCase(),
+          makeTestResult({
+            attachments: [{ name: 'screenshot', contentType: 'image/png', body: Buffer.from('x') }],
+          }),
+        ),
+      ).resolves.toBeUndefined();
+
+      expect(apiClientInstance.createTestResult).toHaveBeenCalledOnce();
+      expect(stderrSpy).toHaveBeenCalled();
+      stderrSpy.mockRestore();
+    });
+
     it('does not throw when createTestResult rejects — logs to stderr', async () => {
       apiClientInstance.createTestResult.mockRejectedValueOnce(new Error('500'));
       const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
