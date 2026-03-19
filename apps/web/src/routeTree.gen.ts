@@ -9,27 +9,206 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsUsersRouteImport } from './routes/settings/users'
+import { Route as ProjectsProjectIdIndexRouteImport } from './routes/projects/$projectId/index'
+import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects/$projectId/settings'
+import { Route as ProjectsProjectIdFlakyRouteImport } from './routes/projects/$projectId/flaky'
+import { Route as ProjectsProjectIdRunsRunIdIndexRouteImport } from './routes/projects/$projectId/runs/$runId/index'
+import { Route as ProjectsProjectIdRunsRunIdTestsTestIdRouteImport } from './routes/projects/$projectId/runs/$runId/tests/$testId'
 
-export interface FileRoutesByFullPath {}
-export interface FileRoutesByTo {}
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsUsersRoute = SettingsUsersRouteImport.update({
+  id: '/settings/users',
+  path: '/settings/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsProjectIdIndexRoute = ProjectsProjectIdIndexRouteImport.update({
+  id: '/projects/$projectId/',
+  path: '/projects/$projectId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsProjectIdSettingsRoute =
+  ProjectsProjectIdSettingsRouteImport.update({
+    id: '/projects/$projectId/settings',
+    path: '/projects/$projectId/settings',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProjectsProjectIdFlakyRoute = ProjectsProjectIdFlakyRouteImport.update({
+  id: '/projects/$projectId/flaky',
+  path: '/projects/$projectId/flaky',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsProjectIdRunsRunIdIndexRoute =
+  ProjectsProjectIdRunsRunIdIndexRouteImport.update({
+    id: '/projects/$projectId/runs/$runId/',
+    path: '/projects/$projectId/runs/$runId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProjectsProjectIdRunsRunIdTestsTestIdRoute =
+  ProjectsProjectIdRunsRunIdTestsTestIdRouteImport.update({
+    id: '/projects/$projectId/runs/$runId/tests/$testId',
+    path: '/projects/$projectId/runs/$runId/tests/$testId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/settings/users': typeof SettingsUsersRoute
+  '/projects/$projectId/flaky': typeof ProjectsProjectIdFlakyRoute
+  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
+  '/projects/$projectId/': typeof ProjectsProjectIdIndexRoute
+  '/projects/$projectId/runs/$runId/': typeof ProjectsProjectIdRunsRunIdIndexRoute
+  '/projects/$projectId/runs/$runId/tests/$testId': typeof ProjectsProjectIdRunsRunIdTestsTestIdRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/settings/users': typeof SettingsUsersRoute
+  '/projects/$projectId/flaky': typeof ProjectsProjectIdFlakyRoute
+  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
+  '/projects/$projectId': typeof ProjectsProjectIdIndexRoute
+  '/projects/$projectId/runs/$runId': typeof ProjectsProjectIdRunsRunIdIndexRoute
+  '/projects/$projectId/runs/$runId/tests/$testId': typeof ProjectsProjectIdRunsRunIdTestsTestIdRoute
+}
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/settings/users': typeof SettingsUsersRoute
+  '/projects/$projectId/flaky': typeof ProjectsProjectIdFlakyRoute
+  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
+  '/projects/$projectId/': typeof ProjectsProjectIdIndexRoute
+  '/projects/$projectId/runs/$runId/': typeof ProjectsProjectIdRunsRunIdIndexRoute
+  '/projects/$projectId/runs/$runId/tests/$testId': typeof ProjectsProjectIdRunsRunIdTestsTestIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: never
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/settings/users'
+    | '/projects/$projectId/flaky'
+    | '/projects/$projectId/settings'
+    | '/projects/$projectId/'
+    | '/projects/$projectId/runs/$runId/'
+    | '/projects/$projectId/runs/$runId/tests/$testId'
   fileRoutesByTo: FileRoutesByTo
-  to: never
-  id: '__root__'
+  to:
+    | '/'
+    | '/login'
+    | '/settings/users'
+    | '/projects/$projectId/flaky'
+    | '/projects/$projectId/settings'
+    | '/projects/$projectId'
+    | '/projects/$projectId/runs/$runId'
+    | '/projects/$projectId/runs/$runId/tests/$testId'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/settings/users'
+    | '/projects/$projectId/flaky'
+    | '/projects/$projectId/settings'
+    | '/projects/$projectId/'
+    | '/projects/$projectId/runs/$runId/'
+    | '/projects/$projectId/runs/$runId/tests/$testId'
   fileRoutesById: FileRoutesById
 }
-export interface RootRouteChildren {}
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  SettingsUsersRoute: typeof SettingsUsersRoute
+  ProjectsProjectIdFlakyRoute: typeof ProjectsProjectIdFlakyRoute
+  ProjectsProjectIdSettingsRoute: typeof ProjectsProjectIdSettingsRoute
+  ProjectsProjectIdIndexRoute: typeof ProjectsProjectIdIndexRoute
+  ProjectsProjectIdRunsRunIdIndexRoute: typeof ProjectsProjectIdRunsRunIdIndexRoute
+  ProjectsProjectIdRunsRunIdTestsTestIdRoute: typeof ProjectsProjectIdRunsRunIdTestsTestIdRoute
 }
 
-const rootRouteChildren: RootRouteChildren = {}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/users': {
+      id: '/settings/users'
+      path: '/settings/users'
+      fullPath: '/settings/users'
+      preLoaderRoute: typeof SettingsUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$projectId/': {
+      id: '/projects/$projectId/'
+      path: '/projects/$projectId'
+      fullPath: '/projects/$projectId/'
+      preLoaderRoute: typeof ProjectsProjectIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$projectId/settings': {
+      id: '/projects/$projectId/settings'
+      path: '/projects/$projectId/settings'
+      fullPath: '/projects/$projectId/settings'
+      preLoaderRoute: typeof ProjectsProjectIdSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$projectId/flaky': {
+      id: '/projects/$projectId/flaky'
+      path: '/projects/$projectId/flaky'
+      fullPath: '/projects/$projectId/flaky'
+      preLoaderRoute: typeof ProjectsProjectIdFlakyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$projectId/runs/$runId/': {
+      id: '/projects/$projectId/runs/$runId/'
+      path: '/projects/$projectId/runs/$runId'
+      fullPath: '/projects/$projectId/runs/$runId/'
+      preLoaderRoute: typeof ProjectsProjectIdRunsRunIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/$projectId/runs/$runId/tests/$testId': {
+      id: '/projects/$projectId/runs/$runId/tests/$testId'
+      path: '/projects/$projectId/runs/$runId/tests/$testId'
+      fullPath: '/projects/$projectId/runs/$runId/tests/$testId'
+      preLoaderRoute: typeof ProjectsProjectIdRunsRunIdTestsTestIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
+}
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  SettingsUsersRoute: SettingsUsersRoute,
+  ProjectsProjectIdFlakyRoute: ProjectsProjectIdFlakyRoute,
+  ProjectsProjectIdSettingsRoute: ProjectsProjectIdSettingsRoute,
+  ProjectsProjectIdIndexRoute: ProjectsProjectIdIndexRoute,
+  ProjectsProjectIdRunsRunIdIndexRoute: ProjectsProjectIdRunsRunIdIndexRoute,
+  ProjectsProjectIdRunsRunIdTestsTestIdRoute:
+    ProjectsProjectIdRunsRunIdTestsTestIdRoute,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
