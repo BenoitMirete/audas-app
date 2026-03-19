@@ -61,7 +61,7 @@ export interface TestResult {
 export interface FlakyTest {
   title: string;
   rate: number;
-  occurrences: TestStatus[];
+  occurrences: Array<{ status: TestStatus }>;
 }
 export interface ProjectMember {
   id: string;

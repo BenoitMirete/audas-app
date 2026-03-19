@@ -12,6 +12,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  resolve: { alias: { '@': '/src' } },
+  resolve: {
+    alias: {
+      '@': '/src',
+      '@audas/shared': new URL('../../packages/shared/src/index.ts', import.meta.url).pathname,
+    },
+  },
   test: { environment: 'jsdom', globals: true, setupFiles: ['./vitest.setup.ts'] },
 });

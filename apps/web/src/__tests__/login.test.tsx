@@ -59,7 +59,8 @@ describe('LoginForm', () => {
   });
 
   it('disables button while loading', async () => {
-    let resolve!: (v: unknown) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let resolve!: (v: any) => void;
     vi.mocked(api.auth.login).mockReturnValueOnce(new Promise((r) => (resolve = r)));
     render(<LoginForm />);
     await userEvent.type(screen.getByLabelText(/email/i), 'alice@example.com');

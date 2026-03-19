@@ -12,10 +12,11 @@ import {
 import { StatusBadge } from '@/components/StatusBadge';
 import { api } from '@/lib/api';
 import type { Run } from '@/lib/api';
+import { RunStatus } from '@audas/shared';
 
 export const Route = createFileRoute('/projects/$projectId/runs/$runId/')({ component: RunPage });
 
-const ACTIVE_STATUSES = new Set<Run['status']>(['pending', 'running']);
+const ACTIVE_STATUSES = new Set<RunStatus>([RunStatus.PENDING, RunStatus.RUNNING]);
 
 export function RunDetail({ projectId, runId }: { projectId: string; runId: string }) {
   const { data: run } = useQuery({

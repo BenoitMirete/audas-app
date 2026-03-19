@@ -45,7 +45,7 @@ export function ProjectRunsTable({ projectId }: { projectId: string }) {
       <div className="flex gap-4 items-end">
         <div className="grid gap-1.5">
           <Label htmlFor="branch-filter">Branch</Label>
-          <Select value={branch} onValueChange={setBranch}>
+          <Select value={branch} onValueChange={(v) => setBranch(v ?? '')}>
             <SelectTrigger id="branch-filter" className="w-48" aria-label="Branch">
               <SelectValue placeholder="All branches" />
             </SelectTrigger>
@@ -61,7 +61,7 @@ export function ProjectRunsTable({ projectId }: { projectId: string }) {
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="status-filter">Status</Label>
-          <Select value={status} onValueChange={setStatus}>
+          <Select value={status} onValueChange={(v) => setStatus(v ?? '')}>
             <SelectTrigger id="status-filter" className="w-36" aria-label="Status">
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
