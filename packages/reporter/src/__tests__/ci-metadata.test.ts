@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { CIMetadata } from '@audas/shared';
 
 // We import the function fresh each test to avoid module caching env reads.
